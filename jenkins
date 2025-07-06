@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git 'https://github.com/ItSpecialistDevOps/todo-app.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t todo-app .'
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh 'docker rm -f todo || true'
+                sh 'docker run -d --name todo --network todo-net todo-app'
+            }
+        }
+
+        stage('Run Nginx') {
+            steps {
+                sh 'docker rm -f todo-nginx || true'
+                sh 'docker run -d --name todo-nginx --network todo-net -p 8085:80 -v $PWD/nginx.conf:/etc/nginx/nginx.conf:ro nginx:alpine'
+            }
+        }
+    }
+}
