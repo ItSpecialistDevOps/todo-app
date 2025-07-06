@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18'  // or 'node:20' for latest LTS
-        }
-    }
+    agent any
 
     stages {
         stage('Clone Repo') {
@@ -13,6 +9,11 @@ pipeline {
         }
 
         stage('Install Dependencies') {
+            agent {
+                docker {
+                    image 'node:18'
+                }
+            }
             steps {
                 sh 'npm install'
             }
