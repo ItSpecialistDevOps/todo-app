@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'docker:20.10.24-dind'  // Docker-in-Docker image with CLI
+            image 'docker:20.10.24-dind'
             args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
@@ -31,10 +31,15 @@ pipeline {
         stage('Scan Image with Trivy') {
             steps {
                 sh '''
-                    apk add --no-cache curl
+                    apk add --no-cache curl wget git
                     curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-                    trivy image todo-app
+
+                    mkdir -p /tmp/trivy-template
+                    wget -O /tmp/trivy-template/html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
+
+                    trivy image --format template --template "@/tmp/trivy-template/html.tpl" -o trivy-report.html todo-app
                 '''
+                archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
             }
         }
 
