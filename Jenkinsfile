@@ -30,7 +30,11 @@ pipeline {
 
         stage('Scan Image with Trivy') {
             steps {
-                sh 'trivy image todo-app'
+                sh '''
+                    apk add --no-cache curl
+                    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+                    trivy image todo-app
+                '''
             }
         }
 
