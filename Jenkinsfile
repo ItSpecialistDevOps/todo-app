@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18'
+        }
+    }
 
     stages {
         stage('Clone Repo') {
@@ -9,11 +13,6 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            agent {
-                docker {
-                    image 'node:18'
-                }
-            }
             steps {
                 sh 'npm install'
             }
@@ -22,6 +21,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t todo-app .'
+            }
+        }
+
+        stage('Scan Image with Trivy') {
+            steps {
+                sh 'trivy image todo-app || true'
             }
         }
 
