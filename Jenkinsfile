@@ -1,7 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'node:18'
+            image 'docker:20.10.24-dind'  // Docker-in-Docker image with CLI
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
@@ -14,7 +15,10 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                sh '''
+                    apk add --no-cache nodejs npm
+                    npm install
+                '''
             }
         }
 
@@ -26,7 +30,7 @@ pipeline {
 
         stage('Scan Image with Trivy') {
             steps {
-                sh 'trivy image todo-app || true'
+                sh 'trivy image todo-app'
             }
         }
 
